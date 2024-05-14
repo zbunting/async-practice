@@ -29,3 +29,34 @@ function showNumberRace(num1, num2, num3, num4) {
         .then(resp => resp.json())
         .then(winner => console.log(winner.text));
 }
+
+async function showNumberAll(num1, num2, num3, num4) {
+    const p1 = fetch(`${NUMBERS_API_BASE}${num1}?json`);
+    const p2 = fetch(`${NUMBERS_API_BASE}${num2}?json`);
+    const p3 = fetch(`${NUMBERS_API_BASE}${num3}?json`);
+    const p4 = fetch(`${NUMBERS_API_BASE}${num4}?json`);
+
+    const respAll = await Promise.allSettled([p1, p2, p3, p4]);
+    console.log("All Responses: ", respAll);
+
+    const fulfilledResps = respAll
+        .filter(resp => resp.status === "fulfilled" && resp.value.ok === true);
+    console.log("fulfilledResps: ", fulfilledResps);
+
+    const rejectedResps = respAll
+        .filter(resp => resp.status === "rejected" || resp.value.ok === false);
+    console.log("rejectedResps: ", rejectedResps);
+
+
+    const dataFromNumbersAPI = await Promise
+        .all(fulfilledResps.map(r => r.value.json())
+        )
+
+    for (const numData of dataFromNumbersAPI) {
+        console.log(numData.text);
+    }
+
+    for (const rejectedResp of rejectedResps) {
+        console.log(rejectedResp.value);
+    }
+}
